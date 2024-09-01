@@ -1,0 +1,20 @@
+{
+  "config": [
+    {
+      "operation": "transfer",
+      "criterias": [
+        { "field": "amount", "operand": "<", "value": 10 },
+        { "field": "currency", "operand": "==", "value": "HBD" }
+      ],
+      "isUsing2FA": true
+    },
+    {
+      "operation": "transfer",
+      "criterias": [
+        { "field": "amount", "operand": "<", "value": 30 },
+        { "field": "currency", "operand": "==", "value": "HIVE" }
+      ],
+      "isUsing2FA": false
+    }
+  ]
+}
