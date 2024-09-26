@@ -1,4 +1,4 @@
-import * as hive from "@hiveio/hive-js";
+import { Operation } from "@hiveio/dhive";
 import { KeychainKeyTypes } from "hive-keychain-commons";
 import Logger from "hive-keychain-commons/lib/logger/logger";
 import { authenticator } from "otplib";
@@ -104,81 +104,90 @@ const handleRequestSignTransaction = async (
       transactionUsername
     );
 
-    if (!signer || !signer.metaData || !signer.metaData.twoFACodes) return;
-    const decodedTwoFaCode = await MultisigUtils.decodeMetadata(
-      signer.metaData.twoFACodes[process.env.BOT_ACCOUNT_NAME],
-      key
+    // if (!checkRateLimiting(userConfig.twoFAId)) {
+    //   socket.emit(SocketMessageCommand.SEND_BACK_ERROR, {
+    //     signatureRequestId: signatureRequest.id,
+    //     error: {
+    //       fullMessage: "Rate limiting reached. Try again later",
+    //       message: "error_rate_limiting_reached",
+    //     },
+    //   } as MultisigErrorMessage);
+    //   return;
+    // }
+
+    let shouldSignTransaction = true;
+
+    const operationNames = decodedTransaction.operations.map(
+      (operation: Operation) => operation[0]
     );
 
-    if (userConfig.use2FAByDefault && userConfig.twoFAId && decodedTwoFaCode) {
-      if (!checkRateLimiting(userConfig.twoFAId)) {
-        socket.emit(SocketMessageCommand.SEND_BACK_ERROR, {
-          signatureRequestId: signatureRequest.id,
-          error: {
-            fullMessage: "Rate limiting reached. Try again later",
-            message: "error_rate_limiting_reached",
-          },
-        } as MultisigErrorMessage);
-        return;
-      }
-
-      const is2FACorrect = authenticator.check(
-        decodedTwoFaCode.toString(),
-        hive.memo
-          .decode(process.env.BOT_MEMO_KEY, userConfig.twoFAId)
-          .replace("#", "")
+    // Check if operations in transaction match all criterias
+    // If one of them doesn't match, bot won't sign the transaction
+    for (const operationName of operationNames) {
+      const allUsersOperations = userConfig.operationConfigurations.filter(
+        (opConfig) => !opConfig.username && opConfig.operation === operationName
       );
-      console.log({ is2FACorrect });
-      if (is2FACorrect) {
-        const signedTransaction = await HiveUtils.signTransaction(
-          decodedTransaction,
-          key
-        );
+      const specificUserOperations = userConfig.operationConfigurations.filter(
+        (opConfig) =>
+          opConfig.username === signatureRequest.initiator &&
+          opConfig.operation === operationName
+      );
 
-        if (signedTransaction) {
-          socket.emit(
-            SocketMessageCommand.SIGN_TRANSACTION,
-            {
-              signature:
-                signedTransaction.signatures[
-                  signedTransaction.signatures.length - 1
-                ],
-              signerId: signer.id,
-              signatureRequestId: signatureRequest.id,
-            },
-            async (signatures) => {
-              // Broadcast
-              console.log("should broadcast", signatures);
-              signedTransaction.signatures = signatures;
-              try {
-                await HiveUtils.getClient().broadcast.send(signedTransaction);
-                socket.emit(
-                  SocketMessageCommand.NOTIFY_TRANSACTION_BROADCASTED,
-                  { signatureRequestId: signatureRequest.id },
-                  () => {
-                    console.log("backend notified of broadcast");
-                  }
-                );
-              } catch (err) {
-                Logger.error(`Error while broadcasting`, err);
-              }
-            }
-          );
-        }
-
-        // wait for eventual broadcast request
-
-        // HiveUtils;
-      } else {
-        console.log(`OTP couldn't be verified`);
-        socket.emit(SocketMessageCommand.SEND_BACK_ERROR, {
-          signatureRequestId: signatureRequest.id,
-          error: {
-            fullMessage: "OPT couldn't be verified",
-            message: "error_otp_not_verified",
-          },
-        } as MultisigErrorMessage);
+      if (!allUsersOperations && !specificUserOperations) {
+        shouldSignTransaction = false;
+        break;
       }
+    }
+
+    if (shouldSignTransaction) {
+      const signedTransaction = await HiveUtils.signTransaction(
+        decodedTransaction,
+        key
+      );
+
+      if (signedTransaction) {
+        socket.emit(
+          SocketMessageCommand.SIGN_TRANSACTION,
+          {
+            signature:
+              signedTransaction.signatures[
+                signedTransaction.signatures.length - 1
+              ],
+            signerId: signer.id,
+            signatureRequestId: signatureRequest.id,
+          },
+          async (signatures) => {
+            // Broadcast
+            console.log("should broadcast", signatures);
+            signedTransaction.signatures = signatures;
+            try {
+              await HiveUtils.getClient().broadcast.send(signedTransaction);
+              socket.emit(
+                SocketMessageCommand.NOTIFY_TRANSACTION_BROADCASTED,
+                { signatureRequestId: signatureRequest.id },
+                () => {
+                  console.log("backend notified of broadcast");
+                }
+              );
+            } catch (err) {
+              Logger.error(`Error while broadcasting`, err);
+            }
+          }
+        );
+      }
+
+      // wait for eventual broadcast request
+
+      // HiveUtils;
+    } else {
+      console.log(`OTP couldn't be verified`);
+      socket.emit(SocketMessageCommand.SEND_BACK_ERROR, {
+        signatureRequestId: signatureRequest.id,
+        error: {
+          fullMessage: "OPT couldn't be verified",
+          message: "error_otp_not_verified",
+        },
+      } as MultisigErrorMessage);
     }
   }
 };

@@ -16,11 +16,11 @@ export class OperationConfiguration {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  operation: IOperationName;
+  @Column({ nullable: true })
+  username: string;
 
   @Column()
-  isUsing2FA: boolean;
+  operation: IOperationName;
 
   @CreateDateColumn({
     type: "timestamp",

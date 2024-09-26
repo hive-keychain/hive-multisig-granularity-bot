@@ -11,7 +11,7 @@ const initConfigIfNecessary = async () => {
 
   const jsonMetadata = JSON.parse(extendedAccount.json_metadata);
   if (
-    !jsonMetadata.isMultisigBot ||
+    !jsonMetadata.isGranularityBot ||
     !jsonMetadata.configPath ||
     jsonMetadata.configPath !== process.env.CONFIG_PATH
   ) {
@@ -24,7 +24,7 @@ const initConfigIfNecessary = async () => {
             {
               account: process.env.BOT_ACCOUNT_NAME,
               json_metadata: JSON.stringify({
-                isMultisigBot: true,
+                isGranularityBot: true,
                 configPath: process.env.CONFIG_PATH,
               }),
               posting_json_metadata: "",

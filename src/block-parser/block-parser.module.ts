@@ -1,7 +1,6 @@
 import { CustomJsonOperation, SignedBlock, Transaction } from "@hiveio/dhive";
 import Logger from "hive-keychain-commons/lib/logger/logger";
 
-import { BotConfigurationLogic } from "../bot-configuration/bot-configuration.logic";
 import { Config } from "../config";
 import { BlockchainUtils } from "../utils/blockchain.utils";
 import { DataUtils, LayerOneBlockInfo } from "../utils/data.utils";
@@ -134,14 +133,11 @@ const processTransaction = async (
     if (op[0] === "custom_json") {
       const customJson = op[1] as CustomJsonOperation[1];
       switch (customJson.id) {
-        case ConfigurationOperations.SET_TWO_FA_ID: {
-          BotConfigurationLogic.set2FAId(
-            customJson.required_auths[0],
-            JSON.parse(customJson.json)
-          );
-          break;
-        }
         case ConfigurationOperations.SET_GLOBAL_CONFIG: {
+          // BotConfigurationLogic.set2FAId(
+          //   customJson.required_auths[0],
+          //   JSON.parse(customJson.json)
+          // );
           break;
         }
         default:

@@ -10,22 +10,6 @@ const create = async (config: Partial<AccountConfiguration>) => {
   await getRepo().save(config);
 };
 
-const set2FAId = async (username: string, twoFaId: string) => {
-  let accountConfig: Partial<AccountConfiguration> = await getRepo().findOne({
-    where: { username: username },
-  });
-  if (!accountConfig) {
-    accountConfig = {
-      username: username,
-      twoFAId: twoFaId,
-      use2FAByDefault: true,
-    };
-  } else if (accountConfig) {
-    accountConfig.twoFAId = twoFaId;
-  }
-  await getRepo().save(accountConfig);
-};
-
 const update = async () => {};
 
 const get = (username: string) => {
@@ -51,7 +35,6 @@ const getFull = (username: string) => {
 export const AccountConfigurationRepository = {
   create,
   update,
-  set2FAId,
   get,
   getFull,
 };

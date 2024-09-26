@@ -48,6 +48,7 @@ export interface ISignatureRequest {
   keyType: KeychainKeyTypes;
   signers: RequestSignatureSigner[];
   targetedPublicKey: string;
+  initiator: string;
 }
 
 export interface SignatureRequestInitialSigner {
