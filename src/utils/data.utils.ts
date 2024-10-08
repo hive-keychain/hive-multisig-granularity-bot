@@ -6,9 +6,6 @@ let storageLayer1;
 
 export interface LayerOneBlockInfo {
   lastBlock: number;
-  transactionStatus: {
-    [transactionId: string]: boolean;
-  };
 }
 
 const getStorageLayer1 = () => {
@@ -31,7 +28,6 @@ const getLayer1BlockInfo = async (): Promise<LayerOneBlockInfo> => {
 };
 const setLayerOneTransactionProcessed = async (transactionId: string) => {
   const info = await getLayer1BlockInfo();
-  info.transactionStatus[transactionId] = true;
   saveLayer1BlockInfo({ ...info });
 };
 
