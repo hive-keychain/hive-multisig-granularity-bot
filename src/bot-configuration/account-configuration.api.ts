@@ -10,6 +10,7 @@ const setupGetByAccountName = (app: Express) => {
           await BotConfigurationLogic.getConfiguration(req.params.username)
         );
     } catch (e) {
+      console.log(e);
       res.status(404).send("Error");
     }
   });

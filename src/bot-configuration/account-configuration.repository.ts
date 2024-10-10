@@ -21,9 +21,10 @@ const get = (username: string) => {
       createdAt: true,
       operationConfigurations: true,
       updatedAt: true,
-      use2FAByDefault: true,
       username: true,
     } as FindOptionsSelect<AccountConfiguration>,
+    loadEagerRelations: true,
+    relations: ["operationConfigurations"],
   });
 };
 
