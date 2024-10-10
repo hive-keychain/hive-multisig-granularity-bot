@@ -1,4 +1,5 @@
 import { DatabaseModule } from "../database/database.module";
+import { AccountConfiguration } from "../database/entities/account-configuration.entity";
 import { OperationConfiguration } from "../database/entities/operation-configuration.entity";
 
 const getRepo = () => {
@@ -11,4 +12,18 @@ const create = async (config: Partial<OperationConfiguration>) => {
 
 const update = async () => {};
 
-export const OperationConfigurationRepository = { create };
+const add = async (
+  config: Partial<OperationConfiguration>,
+  accountConfiguration: AccountConfiguration
+) => {
+  await getRepo().save({
+    accountConfiguration: accountConfiguration,
+    ...config,
+  });
+};
+
+const deleteAll = async (accountConfiguration: AccountConfiguration) => {
+  await getRepo().delete({ accountConfiguration: accountConfiguration });
+};
+
+export const OperationConfigurationRepository = { create, add, deleteAll };

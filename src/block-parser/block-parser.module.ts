@@ -1,6 +1,7 @@
 import { CustomJsonOperation, SignedBlock, Transaction } from "@hiveio/dhive";
 import Logger from "hive-keychain-commons/lib/logger/logger";
 
+import { BotConfigurationLogic } from "../bot-configuration/bot-configuration.logic";
 import { Config } from "../config";
 import { BlockchainUtils } from "../utils/blockchain.utils";
 import { DataUtils, LayerOneBlockInfo } from "../utils/data.utils";
@@ -85,7 +86,23 @@ const getNextBlock = async () => {
       return;
     }
 
-    await processBlock(block);
+    const customJson: CustomJsonOperation = [
+      "custom_json",
+      {
+        id: "multisig-gbot-config",
+        required_auths: ["hrdcr-hive"],
+        required_posting_auths: [],
+        json: '{"configurations":[{"authority":"choibounge","operations":[{"operationName":"transfer"},{"operationName":"custom_json","id":["test_id","b"]},{"operationName":"delegate_vesting_shares"}]},{"operations":[{"operationName":"vote"},{"operationName":"comment"},{"operationName":"custom_json","id":["test_id","c","multisig-gbot-config"]}]}]}',
+      },
+    ];
+
+    await processBlock({
+      ...block,
+      transactions: [{ ...block.transactions[0], operations: [customJson] }],
+    });
+
+    // await processBlock(block);
+
     await DataUtils.saveLayer1BlockInfo({ lastBlock: currentBlock });
     nbBlocksProcessed++;
     const duration = Date.now() - start;
@@ -99,10 +116,10 @@ const getNextBlock = async () => {
     currentBlock++;
 
     // Attempt to load the nxt block after a 3 second delay, or faster if we're behind and need to catch up
-    setTimeout(BlockParserModule.getNextBlock, 100);
+    // setTimeout(BlockParserModule.getNextBlock, 100); // TODO reactivate
   } catch (e) {
     Logger.error(`Error while getting block #${currentBlock}`, e);
-    BlockParserModule.getNextBlock();
+    // BlockParserModule.getNextBlock(); // TODO reactivate
   }
 };
 
@@ -135,10 +152,11 @@ const processTransaction = async (
       const customJson = op[1] as CustomJsonOperation[1];
       switch (customJson.id) {
         case ConfigurationOperations.SET_GLOBAL_CONFIG: {
-          // BotConfigurationLogic.set2FAId(
-          //   customJson.required_auths[0],
-          //   JSON.parse(customJson.json)
-          // );
+          BotConfigurationLogic.setConfig(
+            customJson.required_auths[0] ??
+              customJson.required_posting_auths[1],
+            JSON.parse(customJson.json)
+          );
           break;
         }
         default:

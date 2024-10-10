@@ -1,13 +1,14 @@
 import { FindOptionsSelect } from "typeorm";
 import { DatabaseModule } from "../database/database.module";
 import { AccountConfiguration } from "../database/entities/account-configuration.entity";
+import { OperationConfigurationRepository } from "./operation-configuration.repository";
 
 const getRepo = () => {
   return DatabaseModule.getDatabase().getRepository(AccountConfiguration);
 };
 
 const create = async (config: Partial<AccountConfiguration>) => {
-  await getRepo().save(config);
+  return await getRepo().save(config);
 };
 
 const update = async () => {};
@@ -32,9 +33,18 @@ const getFull = (username: string) => {
   });
 };
 
+const deleteConfiguration = async (username: string) => {
+  const accountConfig = await getRepo().findOne({
+    where: { username: username },
+  });
+  await OperationConfigurationRepository.deleteAll(accountConfig);
+  return getRepo().delete({ username: username });
+};
+
 export const AccountConfigurationRepository = {
   create,
   update,
   get,
   getFull,
+  deleteConfiguration,
 };

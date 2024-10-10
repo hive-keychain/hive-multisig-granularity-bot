@@ -10,6 +10,15 @@ const initConfigIfNecessary = async () => {
   )[0];
 
   const jsonMetadata = JSON.parse(extendedAccount.json_metadata);
+  console.log(jsonMetadata);
+  console.log(
+    !jsonMetadata.isGranularityBot,
+    !jsonMetadata.configPath,
+    jsonMetadata.configPath !== process.env.CONFIG_PATH,
+    !jsonMetadata.isGranularityBot ||
+      !jsonMetadata.configPath ||
+      jsonMetadata.configPath !== process.env.CONFIG_PATH
+  );
   if (
     !jsonMetadata.isGranularityBot ||
     !jsonMetadata.configPath ||

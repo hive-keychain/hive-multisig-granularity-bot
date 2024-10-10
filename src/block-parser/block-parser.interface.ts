@@ -1,3 +1,3 @@
 export enum ConfigurationOperations {
-  SET_GLOBAL_CONFIG = "setGlobalConfig",
+  SET_GLOBAL_CONFIG = "multisig-gbot-config",
 }
