@@ -104,6 +104,18 @@ const handleRequestSignTransaction = async (
       transactionUsername
     );
 
+    if (!userConfig) {
+      console.log(`No configuration found`);
+      socket.emit(SocketMessageCommand.SEND_BACK_ERROR, {
+        signatureRequestId: signatureRequest.id,
+        error: {
+          fullMessage: "No configuration found. Transaction can't be signed",
+          message: "error_multisig_no_config_found",
+        },
+      } as MultisigErrorMessage);
+      return;
+    }
+
     // if (!checkRateLimiting(userConfig.twoFAId)) {
     //   socket.emit(SocketMessageCommand.SEND_BACK_ERROR, {
     //     signatureRequestId: signatureRequest.id,
