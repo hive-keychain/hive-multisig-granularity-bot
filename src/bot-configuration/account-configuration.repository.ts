@@ -31,6 +31,8 @@ const get = (username: string) => {
 const getFull = (username: string) => {
   return getRepo().findOne({
     where: { username: username },
+    loadEagerRelations: true,
+    relations: ["operationConfigurations"],
   });
 };
 
