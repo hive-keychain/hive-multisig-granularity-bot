@@ -22,6 +22,20 @@ export class OperationConfiguration {
   @Column()
   operation: IOperationName;
 
+  @Column({
+    nullable: true,
+    transformer: {
+      to(value) {
+        return JSON.stringify(value);
+      },
+      from(value) {
+        return JSON.parse(value);
+      },
+    },
+    type: "longtext",
+  })
+  extraData: string[];
+
   @CreateDateColumn({
     type: "timestamp",
     default: () => "CURRENT_TIMESTAMP(6)",
