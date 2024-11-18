@@ -86,22 +86,22 @@ const getNextBlock = async () => {
       return;
     }
 
-    const customJson: CustomJsonOperation = [
-      "custom_json",
-      {
-        id: "multisig-gbot-config",
-        required_auths: ["hrdcr-hive"],
-        required_posting_auths: [],
-        json: '{"configurations":[{"authority":"choibounge","operations":[{"operationName":"transfer"},{"operationName":"custom_json","id":["test_id","b"]},{"operationName":"delegate_vesting_shares"}]},{"operations":[{"operationName":"vote"},{"operationName":"comment"},{"operationName":"custom_json","id":["test_id","c","multisig-gbot-config"]}]}]}',
-      },
-    ];
+    // const customJson: CustomJsonOperation = [
+    //   "custom_json",
+    //   {
+    //     id: "multisig-gbot-config",
+    //     required_auths: ["hrdcr-hive"],
+    //     required_posting_auths: [],
+    //     json: '{"configurations":[{"authority":"choibounge","operations":[{"operationName":"transfer"},{"operationName":"custom_json","id":["test_id","b"]},{"operationName":"delegate_vesting_shares"}]},{"operations":[{"operationName":"vote"},{"operationName":"comment"},{"operationName":"custom_json","id":["test_id","c","multisig-gbot-config"]}]}]}',
+    //   },
+    // ];
 
-    await processBlock({
-      ...block,
-      transactions: [{ ...block.transactions[0], operations: [customJson] }],
-    });
+    // await processBlock({
+    //   ...block,
+    //   transactions: [{ ...block.transactions[0], operations: [customJson] }],
+    // });
 
-    // await processBlock(block);
+    await processBlock(block);
 
     await DataUtils.saveLayer1BlockInfo({ lastBlock: currentBlock });
     nbBlocksProcessed++;
