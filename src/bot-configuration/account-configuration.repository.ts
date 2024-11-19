@@ -22,7 +22,6 @@ const get = (username: string) => {
       operationConfigurations: true,
       updatedAt: true,
       username: true,
-      extraData: true,
     } as FindOptionsSelect<AccountConfiguration>,
     loadEagerRelations: true,
     relations: ["operationConfigurations"],
