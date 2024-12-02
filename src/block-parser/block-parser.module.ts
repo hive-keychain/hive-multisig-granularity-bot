@@ -116,10 +116,10 @@ const getNextBlock = async () => {
     currentBlock++;
 
     // Attempt to load the nxt block after a 3 second delay, or faster if we're behind and need to catch up
-    // setTimeout(BlockParserModule.getNextBlock, 100); // TODO reactivate
+    setTimeout(BlockParserModule.getNextBlock, 100); // TODO reactivate
   } catch (e) {
     Logger.error(`Error while getting block #${currentBlock}`, e);
-    // BlockParserModule.getNextBlock(); // TODO reactivate
+    BlockParserModule.getNextBlock(); // TODO reactivate
   }
 };
 
