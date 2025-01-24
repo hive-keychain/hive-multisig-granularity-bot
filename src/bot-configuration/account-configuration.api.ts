@@ -4,6 +4,7 @@ import { BotConfigurationLogic } from "./bot-configuration.logic";
 const setupGetByAccountName = (app: Express) => {
   app.get(`/account-configuration/:username`, async (req, res) => {
     try {
+      // console.log("here");
       res
         .status(200)
         .send(

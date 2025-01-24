@@ -21,7 +21,7 @@ export const Config = {
   },
   parser: {
     infoFilePath: process.env.INFO_FILE_PATH,
-    defaultBlock: process.env.DEFAULT_BLOCK ?? 81778148,
+    defaultBlock: process.env.DEFAULT_BLOCK ?? 92713029,
   },
   bot: {
     account: process.env.BOT_ACCOUNT_NAME,

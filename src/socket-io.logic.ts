@@ -75,7 +75,7 @@ const init = async (): Promise<boolean> => {
 const handleRequestSignTransaction = async (
   signatureRequest: ISignatureRequest
 ) => {
-  // console.log(signatureRequest);
+  console.log("receiving tx", signatureRequest);
   const signer = signatureRequest.signers.find(
     (signer: RequestSignatureSigner) => {
       return signer.publicKey === signatureRequest.targetedPublicKey;
@@ -103,7 +103,6 @@ const handleRequestSignTransaction = async (
     const userConfig = await BotConfigurationLogic.getFullConfiguration(
       transactionUsername
     );
-
     if (!userConfig) {
       console.log(`No configuration found`);
       socket.emit(SocketMessageCommand.SEND_BACK_ERROR, {
@@ -116,22 +115,12 @@ const handleRequestSignTransaction = async (
       return;
     }
 
-    // if (!checkRateLimiting(userConfig.twoFAId)) {
-    //   socket.emit(SocketMessageCommand.SEND_BACK_ERROR, {
-    //     signatureRequestId: signatureRequest.id,
-    //     error: {
-    //       fullMessage: "Rate limiting reached. Try again later",
-    //       message: "error_rate_limiting_reached",
-    //     },
-    //   } as MultisigErrorMessage);
-    //   return;
-    // }
-
     let shouldSignTransaction = true;
 
     const operationNames = decodedTransaction.operations.map(
       (operation: Operation) => operation[0]
     );
+    console.log("there");
 
     // Check if operations in transaction match all criterias
     // If one of them doesn't match, bot won't sign the transaction
@@ -144,8 +133,9 @@ const handleRequestSignTransaction = async (
           opConfig.username === signatureRequest.initiator &&
           opConfig.operation === operationName
       );
+      console.log(allUsersOperations, specificUserOperations, operationName);
 
-      if (!allUsersOperations && !specificUserOperations) {
+      if (!allUsersOperations.length && !specificUserOperations.length) {
         shouldSignTransaction = false;
         break;
       }
@@ -173,10 +163,12 @@ const handleRequestSignTransaction = async (
             console.log("should broadcast", signatures);
             signedTransaction.signatures = signatures;
             try {
-              await HiveUtils.getClient().broadcast.send(signedTransaction);
+              const result = await HiveUtils.getClient().broadcast.send(
+                signedTransaction
+              );
               socket.emit(
                 SocketMessageCommand.NOTIFY_TRANSACTION_BROADCASTED,
-                { signatureRequestId: signatureRequest.id },
+                { signatureRequestId: signatureRequest.id, txId: result.id },
                 () => {
                   console.log("backend notified of broadcast");
                 }
@@ -192,12 +184,12 @@ const handleRequestSignTransaction = async (
 
       // HiveUtils;
     } else {
-      console.log(`OTP couldn't be verified`);
+      console.log(`This operation isn't allowed under granularity rules`);
       socket.emit(SocketMessageCommand.SEND_BACK_ERROR, {
         signatureRequestId: signatureRequest.id,
         error: {
-          fullMessage: "OPT couldn't be verified",
-          message: "error_otp_not_verified",
+          fullMessage: "This operation isn't allowed under granularity rules",
+          message: "error_granularity",
         },
       } as MultisigErrorMessage);
     }
