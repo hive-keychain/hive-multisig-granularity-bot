@@ -15,6 +15,7 @@ const createConfig = async (
 };
 
 const setConfig = async (username: string, config: JsonConfiguration) => {
+  console.log(username, config);
   await AccountConfigurationRepository.deleteConfiguration(username);
   const configuration = await AccountConfigurationRepository.create({
     username: username,
@@ -26,6 +27,7 @@ const setConfig = async (username: string, config: JsonConfiguration) => {
         {
           username: conf.authority,
           operation: op.operationName as OperationConfiguration["operation"],
+          extraData: op.id,
         },
         configuration
       );
@@ -34,7 +36,17 @@ const setConfig = async (username: string, config: JsonConfiguration) => {
 };
 
 const getConfiguration = async (username: string) => {
-  return await AccountConfigurationRepository.get(username);
+  const accountConfiguration = await AccountConfigurationRepository.get(
+    username
+  );
+  const operationConfigurations = [];
+  for (const conf of accountConfiguration.operationConfigurations) {
+    operationConfigurations.push({ ...conf, ids: conf.extraData });
+  }
+  return {
+    ...accountConfiguration,
+    operationConfigurations: operationConfigurations,
+  };
 };
 const getFullConfiguration = async (username: string) => {
   return await AccountConfigurationRepository.getFull(username);

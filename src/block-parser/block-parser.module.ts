@@ -119,12 +119,12 @@ const getNextBlock = async () => {
     setTimeout(BlockParserModule.getNextBlock, 100); // TODO reactivate
   } catch (e) {
     Logger.error(`Error while getting block #${currentBlock}`, e);
-    BlockParserModule.getNextBlock(); // TODO reactivate
+    BlockParserModule.getNextBlock();
   }
 };
 
 const processBlock = async (block: SignedBlock) => {
-  // Logger.debug(`processing block #${currentBlock}`);
+  Logger.debug(`processing block #${currentBlock}`);
 
   const lastTransactionAttempted = 0;
   for (

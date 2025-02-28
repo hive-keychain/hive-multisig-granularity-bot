@@ -69,6 +69,7 @@ const init = async (): Promise<boolean> => {
       SocketMessageCommand.REQUEST_SIGN_TRANSACTION,
       handleRequestSignTransaction
     );
+    resolve(true);
   });
 };
 
@@ -117,23 +118,30 @@ const handleRequestSignTransaction = async (
 
     let shouldSignTransaction = true;
 
-    const operationNames = decodedTransaction.operations.map(
-      (operation: Operation) => operation[0]
-    );
+    const ops = decodedTransaction.operations.map((operation: Operation) => {
+      const id = operation[0] === "custom_json" ? operation[1].id : null;
+      return { operationName: operation[0], id: id };
+    });
+
     console.log("there");
 
     // Check if operations in transaction match all criterias
     // If one of them doesn't match, bot won't sign the transaction
-    for (const operationName of operationNames) {
+    for (const op of ops) {
       const allUsersOperations = userConfig.operationConfigurations.filter(
-        (opConfig) => !opConfig.username && opConfig.operation === operationName
+        (opConfig) =>
+          !opConfig.username && opConfig.operation === op.operationName
       );
       const specificUserOperations = userConfig.operationConfigurations.filter(
         (opConfig) =>
           opConfig.username === signatureRequest.initiator &&
-          opConfig.operation === operationName
+          ((op.operationName === "custom_json" &&
+            opConfig.extraData?.includes(op.id)) ||
+            (op.operationName !== "custom_json" &&
+              opConfig.operation === op.operationName))
       );
-      console.log(allUsersOperations, specificUserOperations, operationName);
+
+      console.log(allUsersOperations, specificUserOperations, op);
 
       if (!allUsersOperations.length && !specificUserOperations.length) {
         shouldSignTransaction = false;
